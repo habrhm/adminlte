@@ -40,6 +40,9 @@
                   <th>Date of Assignment</th>
                   <th>Saved By</th>
                   <th>File</th>
+                  <% if (data.user.role !== 'User') { %>
+                  <th>Action</th>
+                  <% } %>
                 </tr>
               </thead>
               <% if (data.files) { %>
@@ -52,9 +55,16 @@
                   <td><%= file.metadata.dateofassignment %></td>
                   <td><%= file.metadata.savedby %></td>
                   <td>
-                    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#modal-Document" onclick="userAction('<%= file.filename %>')">
+                    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#modal-Document" onclick="userAction('<%= file.filename %>','open')">
                       <i class="fa fa-file"></i>
                     </button>
+                  </td>
+                  <td>
+                    <% if (data.user.role !== 'User') { %>
+                    <button type="button" class="btn btn-danger" onclick="userAction('<%= file.filename %>','delete')">
+                      <i class="fa fa-trash"></i>
+                    </button>
+                    <% } %>
                   </td>
                 </tr>
                 <% } %>
@@ -68,6 +78,9 @@
                   <th>Date of Assignment</th>
                   <th>Saved By</th>
                   <th>File</th>
+                  <% if (data.user.role !== 'User') { %>
+                  <th>Action</th>
+                  <% } %>
                 </tr>
               </tfoot>
             </table>
@@ -107,9 +120,21 @@
 
 <%- include("footer"); -%>
 
-<script type="text/javascript">
-  function userAction(filename) {
-    $('#srcDoc').attr('src', '/dashboard/document/' + filename);
+<script>
+  function userAction(filename, action) {
+    if (action === 'open') {
+      let ext = filename.split('.').pop();
+      $('#srcDoc').attr('height', (ext === 'pdf' ? '450px' : '100%'));
+      $('#srcDoc').attr('src', '/dashboard/document/' + filename);
+    } else if (action === 'delete') {
+      $.ajax({
+        type: 'delete',
+        url: window.location.origin + '/dashboard/document/' + filename,
+        success: function(data) {
+          location.reload();
+        }
+      });
+    }
   }
   $(function() {
     $('#docTable').DataTable({

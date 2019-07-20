@@ -8,9 +8,9 @@ const mongoose = require('mongoose');
 const multer = require('multer');
 const GridFsStorage = require('multer-gridfs-storage');
 const Grid = require('gridfs-stream');
-const methodOverride = require('method-override');
 const progress = require('progress-stream');
-const login = require('./../../home/login');
+const login = require('./../home/login');
+const User = require('./../../models/User');
 
 //Mongo URI
 const mongoURI = process.env.DB_CONNECTION;
@@ -65,20 +65,19 @@ const upload = multer({
 
 router.get('/', (req, res) => {
   if (req.isAuthenticated()) {
-    gfs.files.find().toArray((err, files) => {
+    gfs.files.find().toArray(async (err, files) => {
       if (err)
         console.log(err);
       else {
-        if (!files || files.length === 0)
-          files = false;
+        const user = await User.findById(login.user._id);
         const dataObject = {
           'title': 'Home',
-          'user': login.user,
+          'user': user,
           'isLogin': login.isLogin,
-          'files': files,
+          'files': (!files || files.length === 0 ? false : files),
           'isInputDoc': false
         }
-        res.render('dashboard/user/home', {
+        res.render('dashboard/home', {
           data: dataObject
         });
         login.isLogin = false;
@@ -97,7 +96,7 @@ router.get('/document', (req, res) => {
       'files': false,
       'isInputDoc': false
     }
-    res.render('dashboard/user/document', {
+    res.render('dashboard/document', {
       data: dataObject
     });
     login.isLogin = false;
@@ -126,7 +125,7 @@ router.post('/document', (req, res) => {
         'files': false,
         'isInputDoc': true,
       }
-      res.render('dashboard/user/document', {
+      res.render('dashboard/document', {
         data: dataObject
       });
     });
@@ -134,9 +133,9 @@ router.post('/document', (req, res) => {
     res.redirect('/login');
 });
 
-router.get('/document/:filename', (req, res) => {
+router.get('/document/:filename', async (req, res) => {
   if (req.isAuthenticated()) {
-    gfs.files.findOne({
+    await gfs.files.findOne({
       filename: req.params.filename
     }, (err, file) => {
       if (err)
@@ -150,6 +149,27 @@ router.get('/document/:filename', (req, res) => {
     res.redirect('/login');
 });
 
+router.delete('/document/:filename', async (req, res) => {
+  if (req.isAuthenticated()) {
+    await gfs.remove({
+      filename: req.params.filename,
+      root: 'documents'
+    }, (err, gridStore) => {
+      if (err)
+        console.log(err);
+      else
+        res.status(200).send("success");
+    });
+  } else
+    res.redirect('/login');
+});
+
+//Logout route
+router.use('/logout', (req, res) => {
+  req.logout();
+  res.redirect('/login');
+});
+
 router.use((req, res) => {
   if (req.isAuthenticated()) {
     const dataObject = {
@@ -159,7 +179,7 @@ router.use((req, res) => {
       'files': false,
       'isInputDoc': false
     }
-    res.status(404).render('dashboard/user/404', {
+    res.status(404).render('dashboard/404', {
       data: dataObject
     });
   } else

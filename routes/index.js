@@ -10,12 +10,7 @@ router.use('/login', require('./home/login'));
 //Register route
 router.use('/register', require('./home/register'));
 //Dashboard route
-router.use('/dashboard', require('./dashboard/user/home'));
-//Logout route
-router.use('/logout', (req, res) => {
-  req.logout();
-  res.redirect('/');
-});
+router.use('/dashboard', require('./dashboard/home'));
 
 router.use((req, res) => {
   if (!req.isAuthenticated())
