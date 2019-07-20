@@ -1,0 +1,156 @@
+<%- include("header"); -%>
+<%- include("sidebar"); -%>
+
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <% if (data.isInputDoc) { %>
+    <div class="alert alert-success alert-dismissible">
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+      <h4><i class="icon fa fa-check"></i> Alert!</h4>
+      Document was successfully input.
+    </div>
+    <% } else { %>
+    <div class="alert alert-info alert-dismissible">
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+      <h4><i class="icon fa fa-info"></i> Alert!</h4>
+      Please fill all the forms with the correct data.
+    </div>
+    <% } %>
+    <h1>
+      <%= data.title %>
+    </h1>
+  </section>
+
+  <!-- Main content -->
+  <section class="content container-fluid">
+    <div class="row">
+      <!-- left column -->
+      <div class="col-md-12">
+        <!-- general form elements -->
+        <div class="box box-primary">
+          <div class="box-header with-border">
+            <h3 class="box-title">Document</h3>
+          </div>
+          <!-- /.box-header -->
+          <!-- form start -->
+          <form class="form-horizontal" action="/dashboard/document" method="post" enctype="multipart/form-data">
+            <div class="box-body">
+              <div class="form-group">
+                <label for="inputDocumentID" class="col-sm-2 control-label">Document ID</label>
+                <div class="col-sm-8">
+                  <input type="text" class="form-control" id="inputDocumentID" name="docid" placeholder="Please Input the Dcoument ID" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="inputDocumentTitle" class="col-sm-2 control-label">Document Title</label>
+                <div class="col-sm-8">
+                  <input type="text" class="form-control" id="inputDocumentTitle" name="doctitle" placeholder="Please Input the Document Title" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="inputAssignedTo" class="col-sm-2 control-label">Assigned To</label>
+                <div class="col-sm-8">
+                  <select class="form-control select2" id="inputAssignedTo" name="assignedto" style="width: 100%;" required>
+                    <option value="Mula Putera, SE.M.Sc">Mula Putera, SE.M.Sc</option>
+                    <option value="Sylvia Kusumawati, S.Hut.MM">Sylvia Kusumawati, S.Hut.MM</option>
+                    <option value="Christieni Maria, S.TP">Christieni Maria, S.TP</option>
+                    <option value="Susanto, S.TP">Susanto, S.TP</option>
+                    <option value="Bina Manaseh Sianipar, SP">Bina Manaseh Sianipar, SP</option>
+                  </select>
+                </div>
+              </div>
+              <!-- Date -->
+              <div class="form-group">
+                <label for="datepicker" class="col-sm-2 control-label">Date of Assignment</label>
+                <div class="col-sm-8">
+                  <div class="input-group date">
+                    <div class="input-group-addon">
+                      <i class="fa fa-calendar"></i>
+                    </div>
+                    <input type="text" class="form-control pull-right" id="datepicker" name="dateofassignment" required>
+                  </div>
+                </div>
+                <!-- /.input group -->
+              </div>
+              <div class="form-group">
+                <label for="inputSavedBy" class="col-sm-2 control-label">Saved By</label>
+                <div class="col-sm-8">
+                  <input type="text" class="form-control" id="inputSavedBy" name="savedby" value="<%= data.user.fullname %>" required>
+                </div>
+              </div>
+              <!-- /.form group -->
+              <div class="form-group">
+                <label for="inputDocument" class="col-sm-2 control-label">Upload Document</label>
+                <div class="col-sm-8">
+                  <div class="input-group input-file" id="inputDocument" name="uploaddocument">
+                    <span class="input-group-btn">
+                      <button class="btn btn-default btn-choose" type="button">Choose</button>
+                    </span>
+                    <input type="text" class="form-control" placeholder="Please Choose a file..." required>
+                    <span class="input-group-btn">
+                      <button class="btn btn-warning btn-reset" type="button">Reset</button>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- /.box-body -->
+            <div class="box-footer">
+              <div class="col-sm-10"></div>
+              <button type="submit" class="btn btn-primary col-sm-2">Submit</button>
+            </div>
+          </form>
+        </div>
+        <!-- /.box -->
+      </div>
+  </section>
+  <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+
+<%- include("footer"); -%>
+
+<script type="text/javascript">
+  $('form[action="/dashboard/document"]').on('submit', function() {
+    $(this).find('button[type="submit"]').prop('disabled', true);
+  });
+
+  function bs_input_file() {
+    $(".input-file").before(
+      function() {
+        if (!$(this).prev().hasClass('input-ghost')) {
+          var element = $("<input type='file' class='input-ghost' style='visibility:hidden; height:0'>");
+          element.attr("name", $(this).attr("name"));
+          element.change(function() {
+            element.next(element).find('input').val((element.val()).split('\\').pop());
+          });
+          $(this).find("button.btn-choose").click(function() {
+            element.click();
+          });
+          $(this).find("button.btn-reset").click(function() {
+            element.val(null);
+            $(this).parents(".input-file").find('input').val('');
+          });
+          $(this).find('input').css("cursor", "pointer");
+          $(this).find('input').mousedown(function() {
+            $(this).parents('.input-file').prev().click();
+            return false;
+          });
+          return element;
+        }
+      }
+    );
+  }
+  $(function() {
+    //Initialize Select2 Elements
+    $('.select2').select2();
+    //Date picker
+    $('#datepicker').datepicker({
+      format: 'dd/mm/yyyy',
+      autoclose: true
+    });
+    bs_input_file();
+  });
+</script>

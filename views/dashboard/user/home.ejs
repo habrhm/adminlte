@@ -1,0 +1,124 @@
+<%- include("header"); -%>
+<%- include("sidebar"); -%>
+
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <% if (data.isLogin) { %>
+    <div class="alert alert-success alert-dismissible">
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+      <h4><i class="icon fa fa-check"></i> Alert!</h4>
+      <% let dt = new Date(); %>
+      Login succeed. Last logged in : <%= dt.toDateString() %>
+    </div>
+    <% } %>
+    <h1>
+      <%= data.title %>
+    </h1>
+  </section>
+
+  <!-- Main content -->
+  <section class="content container-fluid">
+
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="box">
+          <div class="box-header">
+            <h3 class="box-title">
+              Document Database
+            </h3>
+          </div>
+          <!-- /.box-header -->
+          <div class="box-body">
+            <table id="docTable" class="table table-bordered table-hover">
+              <thead>
+                <tr>
+                  <th>Document ID</th>
+                  <th>Document Title</th>
+                  <th>Assigned To</th>
+                  <th>Date of Assignment</th>
+                  <th>Saved By</th>
+                  <th>File</th>
+                </tr>
+              </thead>
+              <% if (data.files) { %>
+              <tbody>
+                <% for (let file of data.files) { %>
+                <tr>
+                  <td><%= file.metadata.docid %></td>
+                  <td><%= file.metadata.doctitle %></td>
+                  <td><%= file.metadata.assignedto %></td>
+                  <td><%= file.metadata.dateofassignment %></td>
+                  <td><%= file.metadata.savedby %></td>
+                  <td>
+                    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#modal-Document" onclick="userAction('<%= file.filename %>')">
+                      <i class="fa fa-file"></i>
+                    </button>
+                  </td>
+                </tr>
+                <% } %>
+              </tbody>
+              <% } %>
+              <tfoot>
+                <tr>
+                  <th>Document ID</th>
+                  <th>Document Title</th>
+                  <th>Assigned To</th>
+                  <th>Date of Assignment</th>
+                  <th>Saved By</th>
+                  <th>File</th>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          <!-- /.box-body -->
+        </div>
+        <!-- /.box -->
+      </div>
+      <!-- /.col -->
+    </div>
+    <!-- /.row -->
+
+  </section>
+  <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+
+<!-- Modal -->
+<div id="modal-Document" class="modal fade" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">File Document</h4>
+      </div>
+      <div class="modal-body">
+        <embed id="srcDoc" frameborder="0" width="100%" height="450px">
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- /.modal -->
+
+<%- include("footer"); -%>
+
+<script type="text/javascript">
+  function userAction(filename) {
+    $('#srcDoc').attr('src', '/dashboard/document/' + filename);
+  }
+  $(function() {
+    $('#docTable').DataTable({
+      'paging': true,
+      'lengthChange': false,
+      'searching': true,
+      'ordering': true,
+      'info': true,
+      'autoWidth': false
+    });
+  });
+</script>
