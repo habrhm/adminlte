@@ -9,6 +9,7 @@ const multer = require('multer');
 const GridFsStorage = require('multer-gridfs-storage');
 const Grid = require('gridfs-stream');
 const methodOverride = require('method-override');
+const progress = require('progress-stream');
 const login = require('./../../home/login');
 
 //Mongo URI
@@ -104,17 +105,30 @@ router.get('/document', (req, res) => {
     res.redirect('/login');
 });
 
-router.post('/document', upload.single('uploaddocument'), (req, res) => {
+router.post('/document', (req, res) => {
   if (req.isAuthenticated()) {
-    const dataObject = {
-      'title': 'Input Document',
-      'user': login.user,
-      'isLogin': login.isLogin,
-      'files': false,
-      'isInputDoc': true,
-    }
-    res.render('dashboard/user/document', {
-      data: dataObject
+    const io = req.app.get('socketio');
+    const p = progress({
+      length: req.headers['content-length'],
+    });
+    const u = upload.single('uploaddocument');
+    req.pipe(p);
+    p.headers = req.headers;
+    p.on('progress', (progress) => {
+      const percent = parseInt(progress.percentage);
+      io.emit('uploading', percent);
+    });
+    u(p, res, () => {
+      const dataObject = {
+        'title': 'Input Document',
+        'user': login.user,
+        'isLogin': login.isLogin,
+        'files': false,
+        'isInputDoc': true,
+      }
+      res.render('dashboard/user/document', {
+        data: dataObject
+      });
     });
   } else
     res.redirect('/login');

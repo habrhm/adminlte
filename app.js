@@ -8,17 +8,26 @@ const cors = require('cors');
 const session = require('express-session');
 const passport = require('passport');
 
-//Import Routes
-const routes = require('./routes');
-
 const port = process.env.PORT || 3000;
 const app = express();
 
-//Cross origin policy
-app.use(cors());
+const server = app.listen(port, () => {
+  console.log(`Server Started at port ${port}`);
+});
+
+const io = require('socket.io')(server);
+
+//Import Routes
+const routes = require('./routes');
+
+//Set socket.io
+app.set('socketio', io);
 
 //Set view engine
 app.set('view engine', 'ejs');
+
+//Cross origin policy
+app.use(cors());
 
 //Set body-parser
 app.use(express.json());
@@ -49,8 +58,3 @@ mongoose.set('useCreateIndex', true);
 
 //Routes to /routes/index.js
 app.use(routes);
-
-//How to we start listening to the server
-app.listen(port, () => {
-  console.log(`Server Started at port ${port}`);
-});

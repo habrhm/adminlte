@@ -102,6 +102,11 @@
               <button type="submit" class="btn btn-primary col-sm-2">Submit</button>
             </div>
           </form>
+          <div class="progress active" id="progressBox">
+            <div class="progress-bar progress-bar-striped" id="progressbar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:0%">
+              Uploading ...
+            </div>
+          </div>
         </div>
         <!-- /.box -->
       </div>
@@ -112,7 +117,8 @@
 
 <%- include("footer"); -%>
 
-<script type="text/javascript">
+<script src="/socket.io/socket.io.js"></script>
+<script>
   $('form[action="/dashboard/document"]').on('submit', function() {
     $(this).find('button[type="submit"]').prop('disabled', true);
   });
@@ -144,6 +150,13 @@
     );
   }
   $(function() {
+    const socket = io();
+
+    $('#progressBox').hide();
+    socket.on('uploading', function(percentage) {
+      $('#progressBox').show();
+      $('#progressbar').attr('aria-valuenow', percentage).css('width', percentage + '%');
+    });
     //Initialize Select2 Elements
     $('.select2').select2();
     //Date picker
