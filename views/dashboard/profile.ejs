@@ -9,7 +9,7 @@
     <div class="alert alert-success alert-dismissible">
       <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
       <h4><i class="icon fa fa-check"></i> Alert!</h4>
-      Document was successfully input.
+      Data Profile was successfully updated.
     </div>
     <% } else if (data.flag === 2) { %>
     <div class="alert alert-warning alert-dismissible">
@@ -33,64 +33,103 @@
   <section class="content container-fluid">
     <div class="row">
       <!-- left column -->
-      <div class="col-md-12">
+      <div class="col-md-4">
+        <!-- general form elements -->
+        <div class="box box-primary">
+          <div class="box-header with-border" align="center">
+            <% if (data.profile) { %>
+            <img src="/dashboard/profile/<%= data.profile.filename %>" alt="Profile Picture" width="160" height="160">
+            <% } else { %>
+            <img src="/dist/img/photo.png" alt="Profile Picture" width="160" height="160">
+            <% } %>
+          </div>
+          <!-- /.box-header -->
+          <div class="box-body" align="center">
+            <% if (data.profile) { %>
+            <h5><i class="icon fa fa-user"></i> <%= data.profile.metadata.fullname %></h5>
+            <h5><i class="icon fa fa-envelope"></i> <%= data.profile.metadata.email %></h5>
+            <h5><i class="icon fa fa-id-card"></i> <%= data.profile.metadata.nip %></h5>
+            <h5><i class="icon fa fa-birthday-cake"></i> <%= data.profile.metadata.birthday %></h5>
+            <% } %>
+          </div>
+        </div>
+        <!-- /.box -->
+      </div>
+      <!-- Right column -->
+      <div class="col-md-8">
         <!-- general form elements -->
         <div class="box box-primary">
           <div class="box-header with-border">
-            <h3 class="box-title">Document</h3>
+            <h3 class="box-title">Update Data</h3>
           </div>
           <!-- /.box-header -->
           <!-- form start -->
-          <form class="form-horizontal" action="/dashboard/document" method="post" enctype="multipart/form-data">
+          <form class="form-horizontal" action="/dashboard/profile" method="post" enctype="multipart/form-data">
             <div class="box-body">
               <div class="form-group">
-                <label for="inputDocumentID" class="col-sm-2 control-label">Document ID</label>
+                <label for="updateFullName" class="col-sm-2 control-label">Full Name</label>
                 <div class="col-sm-8">
-                  <input type="text" class="form-control" id="inputDocumentID" name="docid" placeholder="Please Input the Dcoument ID" required>
+                  <% if (data.profile) { %>
+                  <input type="text" class="form-control" id="updateFullName" name="fullname" value="<%= data.profile.metadata.fullname %>" required>
+                  <% } else { %>
+                  <input type="text" class="form-control" id="updateFullName" name="fullname" placeholder="Please Input Your Full Name" required>
+                  <% } %>
                 </div>
               </div>
               <div class="form-group">
-                <label for="inputDocumentTitle" class="col-sm-2 control-label">Document Title</label>
+                <label for="updateEmail" class="col-sm-2 control-label">Email</label>
                 <div class="col-sm-8">
-                  <input type="text" class="form-control" id="inputDocumentTitle" name="doctitle" placeholder="Please Input the Document Title" required>
+                  <% if (data.profile) { %>
+                  <input type="text" class="form-control" id="updateEmail" name="email" value="<%= data.profile.metadata.email %>" required>
+                  <% } else { %>
+                  <input type="text" class="form-control" id="updateEmail" name="email" placeholder="Please Input Your Email" required>
+                  <% } %>
                 </div>
               </div>
               <div class="form-group">
-                <label for="inputAssignedTo" class="col-sm-2 control-label">Assigned To</label>
+                <label for="updateNIP" class="col-sm-2 control-label">NIP</label>
                 <div class="col-sm-8">
-                  <input type="text" class="form-control" id="inputAssignedTo" name="assignedto" placeholder="Please Input the Assigned to" required>
+                  <% if (data.profile) { %>
+                  <input type="number" class="form-control" id="updateNIP" name="nip" value="<%= data.profile.metadata.nip %>" required>
+                  <% } else { %>
+                  <input type="number" class="form-control" id="updateNIP" name="nip" placeholder="Please Input Your NIP" required>
+                  <% } %>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="updatePhone" class="col-sm-2 control-label">Phone Number</label>
+                <div class="col-sm-8">
+                  <% if (data.profile) { %>
+                  <input type="number" class="form-control" id="updatePhone" name="phone" value="<%= data.profile.metadata.phone %>" required>
+                  <% } else { %>
+                  <input type="number" class="form-control" id="updatePhone" name="phone" placeholder="Please Input Your Phone Number" required>
+                  <% } %>
                 </div>
               </div>
               <!-- Date -->
               <div class="form-group">
-                <label for="datepicker" class="col-sm-2 control-label">Date of Assignment</label>
+                <label for="datepicker" class="col-sm-2 control-label">Birthday</label>
                 <div class="col-sm-8">
                   <div class="input-group date">
                     <div class="input-group-addon">
                       <i class="fa fa-calendar"></i>
                     </div>
-                    <input type="text" class="form-control pull-right" id="datepicker" name="dateofassignment" placeholder="Please Input the Date of Assignment" required>
+                    <% if (data.profile) { %>
+                    <input type="text" class="form-control pull-right" id="datepicker" name="birthday" value="<%= data.profile.metadata.birthday %>" required>
+                    <% } else { %>
+                    <input type="text" class="form-control pull-right" id="datepicker" name="birthday" placeholder="Please Input Your Birthday" required>
+                    <% } %>
                   </div>
                 </div>
               </div>
               <div class="form-group">
-                <label for="inputSavedBy" class="col-sm-2 control-label">Saved By</label>
+                <label for="updatePhoto" class="col-sm-2 control-label">Upload Photo</label>
                 <div class="col-sm-8">
-                  <% if (data.profile) { %>
-                  <input type="text" class="form-control" id="inputSavedBy" name="savedby" value="<%= data.profile.metadata.fullname %>" required>
-                  <% } else { %>
-                  <input type="text" class="form-control" id="inputSavedBy" name="savedby" placeholder="Please Input the Saved By" required>
-                  <% }%>
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="inputDocument" class="col-sm-2 control-label">Upload Document</label>
-                <div class="col-sm-8">
-                  <div class="input-group input-file" id="inputDocument" name="uploaddocument">
+                  <div class="input-group input-file" id="updatePhoto" name="uploadphoto">
                     <span class="input-group-btn">
                       <button class="btn btn-default btn-choose" type="button">Choose</button>
                     </span>
-                    <input type="text" class="form-control" placeholder="Please Choose a Document..." required>
+                    <input type="text" class="form-control" placeholder="Please Choose a Photo..." required>
                     <span class="input-group-btn">
                       <button class="btn btn-warning btn-reset" type="button">Reset</button>
                     </span>
@@ -101,7 +140,7 @@
             <!-- /.box-body -->
             <div class="box-footer">
               <div class="col-sm-10"></div>
-              <button type="submit" class="btn btn-primary col-sm-2">Submit</button>
+              <button type="submit" class="btn btn-primary col-sm-2">Update</button>
             </div>
             <!-- /.form group -->
           </form>
@@ -125,7 +164,7 @@
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
-  $('form[action="/dashboard/document"]').on('submit', function() {
+  $('form[action="/dashboard/profile"]').on('submit', function() {
     $(this).find('button[type="submit"]').prop('disabled', true);
   });
 
@@ -133,7 +172,7 @@
     $(".input-file").before(
       function() {
         if (!$(this).prev().hasClass('input-ghost')) {
-          var element = $("<input type='file' class='input-ghost' accept='application/pdf, image/jpeg' style='visibility:hidden; height:0'>");
+          var element = $("<input type='file' class='input-ghost' accept='image/jpeg' style='visibility:hidden; height:0'>");
           element.attr("name", $(this).attr("name"));
           element.change(function() {
             element.next(element).find('input').val((element.val()).split('\\').pop());
@@ -155,13 +194,6 @@
       }
     );
   }
-
-  function active_menu() {
-    let fullpath = window.location.pathname;
-    let currentLink = $('a[href="' + fullpath + '"]');
-    currentLink.parent().addClass("active");
-  }
-
   $(function() {
     const socket = io();
 
@@ -176,6 +208,5 @@
       autoclose: true
     });
     bs_input_file();
-    active_menu();
   });
 </script>

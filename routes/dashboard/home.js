@@ -10,7 +10,6 @@ const GridFsStorage = require('multer-gridfs-storage');
 const Grid = require('gridfs-stream');
 const progress = require('progress-stream');
 const login = require('./../home/login');
-const User = require('./../../models/User');
 
 //Mongo URI
 const mongoURI = process.env.DB_CONNECTION;
@@ -22,11 +21,16 @@ const conn = mongoose.createConnection(mongoURI, {
 
 //Init gfs
 let docGfs;
+let profileGfs;
+
+Grid.mongo = mongoose.mongo;
 
 conn.once('open', () => {
   //Init stream
-  docGfs = Grid(conn.db, mongoose.mongo);
+  docGfs = Grid(conn.db);
+  profileGfs = Grid(conn.db);
   docGfs.collection('documents');
+  profileGfs.collection('profiles');
 });
 
 //Create storage engine
@@ -38,66 +42,137 @@ const docStorage = new GridFsStorage({
   file: (req, file) => {
     return new Promise((resolve, reject) => {
       crypto.randomBytes(16, (err, buf) => {
-        if (err) {
+        if (err)
           return reject(err);
+        else {
+          const filename = buf.toString('hex') + path.extname(file.originalname);
+          const dt = new Date();
+          const month = (dt.getMonth() + 1);
+          const date = dt.getDate() + "/" + (month < 10 ? '0' + month : month) + "/" + dt.getFullYear()
+          const fileInfo = {
+            filename: filename,
+            metadata: {
+              'docid': req.body.docid,
+              'doctitle': req.body.doctitle,
+              'assignedto': req.body.assignedto,
+              'dateofassignment': req.body.dateofassignment,
+              'savedby': req.body.savedby,
+              'saveddate': date
+            },
+            bucketName: 'documents'
+          };
+          resolve(fileInfo);
         }
-        const filename = buf.toString('hex') + path.extname(file.originalname);
-        const fileInfo = {
-          filename: filename,
-          metadata: {
-            'docid': req.body.docid,
-            'doctitle': req.body.doctitle,
-            'assignedto': req.body.assignedto,
-            'dateofassignment': req.body.dateofassignment,
-            'savedby': req.body.savedby
-          },
-          bucketName: 'documents'
-        };
-        resolve(fileInfo);
       });
     });
   }
 });
 
 const docUpload = multer({
-  storage: docStorage
+  storage: docStorage,
+  fileFilter: function(req, file, cb) {
+    if (file.mimetype !== 'application/pdf' && file.mimetype !== 'image/jpeg') {
+      req.fileValidationError = 'File type must be PDF or JPG/JPEG.';
+      cb(null, false);
+    } else
+      cb(null, true);
+  }
+});
+
+const profileStorage = new GridFsStorage({
+  url: mongoURI,
+  options: {
+    useNewUrlParser: true
+  },
+  file: (req, file) => {
+    return new Promise((resolve, reject) => {
+      crypto.randomBytes(16, (err, buf) => {
+        if (err)
+          return reject(err);
+        else {
+          const filename = buf.toString('hex') + path.extname(file.originalname);
+          const fileInfo = {
+            filename: filename,
+            metadata: {
+              'username': login.user.username,
+              'fullname': req.body.fullname,
+              'email': req.body.email,
+              'nip': req.body.nip,
+              'birthday': req.body.birthday,
+              'phone': req.body.phone
+            },
+            bucketName: 'profiles'
+          };
+          resolve(fileInfo);
+        }
+      });
+    });
+  }
+});
+
+const profileUpload = multer({
+  storage: profileStorage,
+  fileFilter: function(req, file, cb) {
+    if (file.mimetype !== 'image/jpeg') {
+      req.fileValidationError = 'File type must be JPG/JPEG.';
+      cb(null, false);
+    } else
+      cb(null, true);
+  }
 });
 
 router.get('/', (req, res) => {
   if (req.isAuthenticated()) {
-    docGfs.files.find().toArray(async (err, files) => {
+    docGfs.files.find().toArray((err, files) => {
       if (err)
         console.log(err);
       else {
-        const user = await User.findById(login.user._id);
-        const dataObject = {
-          'title': 'Home',
-          'user': user,
-          'isLogin': login.isLogin,
-          'files': (!files || files.length === 0 ? false : files)
-        };
-        res.render('dashboard/home', {
-          data: dataObject
+        profileGfs.files.findOne({
+          'metadata.username': req.user.username
+        }, (err, profile) => {
+          if (err)
+            console.log(err);
+          else {
+            const dataObject = {
+              'title': 'Home',
+              'user': req.user,
+              'isLogin': login.isLogin,
+              'files': (!files || files.length === 0 ? false : files),
+              'profile': profile
+            };
+            res.render('dashboard/home', {
+              data: dataObject
+            });
+            login.isLogin = false;
+          }
         });
-        login.isLogin = false;
       }
     });
   } else
     res.redirect('/login');
 });
 
-router.get('/document', async (req, res) => {
+router.get('/document', (req, res) => {
   if (req.isAuthenticated()) {
-    const user = await User.findById(login.user._id);
-    const dataObject = {
-      'title': 'Input Document',
-      'user': user,
-      'isInputDoc': false
-    };
-    res.render('dashboard/document', {
-      data: dataObject
+    profileGfs.files.findOne({
+      'metadata.username': req.user.username
+    }, (err, profile) => {
+      if (err)
+        console.log(err);
+      else {
+        const dataObject = {
+          'title': 'Input Document',
+          'user': req.user,
+          'flag': 0,
+          'errMessage': '',
+          'profile': profile
+        };
+        res.render('dashboard/document', {
+          data: dataObject
+        });
+        login.isLogin = false;
+      }
     });
-    login.isLogin = false;
   } else
     res.redirect('/login');
 });
@@ -115,24 +190,42 @@ router.post('/document', (req, res) => {
       const percent = parseInt(progress.percentage);
       io.emit('uploading', percent);
     });
-    u(p, res, async () => {
-      const user = await User.findById(login.user._id);
-      const dataObject = {
-        'title': 'Input Document',
-        'user': user,
-        'isInputDoc': true,
-      };
-      res.render('dashboard/document', {
-        data: dataObject
-      });
+    u(p, res, (err) => {
+      if (err)
+        console.log(err);
+      else {
+        profileGfs.files.findOne({
+          'metadata.username': req.user.username
+        }, (err, profile) => {
+          if (err)
+            console.log(err);
+          else {
+            const dataObject = {
+              'title': 'Input Document',
+              'user': req.user,
+              'flag': 0,
+              'errMessage': '',
+              'profile': profile
+            };
+            dataObject.flag = 1;
+            if (p.fileValidationError) {
+              dataObject.flag = 2;
+              dataObject.errMessage = p.fileValidationError;
+            }
+            res.render('dashboard/document', {
+              data: dataObject
+            });
+          }
+        });
+      }
     });
   } else
     res.redirect('/login');
 });
 
-router.get('/document/:filename', async (req, res) => {
+router.get('/document/:filename', (req, res) => {
   if (req.isAuthenticated()) {
-    await docGfs.files.findOne({
+    docGfs.files.findOne({
       filename: req.params.filename
     }, (err, file) => {
       if (err)
@@ -146,9 +239,9 @@ router.get('/document/:filename', async (req, res) => {
     res.redirect('/login');
 });
 
-router.delete('/document/:filename', async (req, res) => {
+router.delete('/document/:filename', (req, res) => {
   if (req.isAuthenticated()) {
-    await docGfs.remove({
+    docGfs.remove({
       filename: req.params.filename,
       root: 'documents'
     }, (err, gridStore) => {
@@ -161,15 +254,97 @@ router.delete('/document/:filename', async (req, res) => {
     res.redirect('/login');
 });
 
-router.get('/profile', async (req, res) => {
+router.get('/profile', (req, res) => {
   if (req.isAuthenticated()) {
-    const user = await User.findById(login.user._id);
-    const dataObject = {
-      'title': 'Profile',
-      'user': user
-    };
-    res.render('dashboard/profile', {
-      data: dataObject
+    profileGfs.files.findOne({
+      'metadata.username': req.user.username
+    }, (err, profile) => {
+      if (err)
+        console.log(err);
+      else {
+        const dataObject = {
+          'title': 'Profile',
+          'user': req.user,
+          'flag': 0,
+          'errMessage': '',
+          'profile': profile
+        };
+        res.render('dashboard/profile', {
+          data: dataObject
+        });
+      }
+    });
+  } else
+    res.redirect('/login');
+});
+
+router.post('/profile', (req, res) => {
+  if (req.isAuthenticated()) {
+    const io = req.app.get('socketio');
+    const p = progress({
+      length: req.headers['content-length'],
+    });
+    const u = profileUpload.single('uploadphoto');
+    req.pipe(p);
+    p.headers = req.headers;
+    p.on('progress', (progress) => {
+      const percent = parseInt(progress.percentage);
+      io.emit('uploading', percent);
+    });
+    u(p, res, (err) => {
+      if (err)
+        console.log(err);
+      else {
+        profileGfs.files.find({
+          'metadata.username': req.user.username
+        }).toArray((err, profiles) => {
+          if (err)
+            console.log(err);
+          else {
+            if (!p.fileValidationError && profiles && profiles.length > 1) {
+              profileGfs.remove({
+                'filename': profiles[0].filename,
+                root: 'profiles'
+              }, (err, gridStore) => {
+                if (err)
+                  console.log(err);
+              });
+            }
+            const profile = (profiles && profiles.length > 1 ? profiles[1] : profiles[0]);
+            const dataObject = {
+              'title': 'Profile',
+              'user': req.user,
+              'flag': 0,
+              'errMessage': '',
+              'profile': profile
+            };
+            dataObject.flag = 1;
+            if (p.fileValidationError) {
+              dataObject.flag = 2;
+              dataObject.errMessage = p.fileValidationError;
+            }
+            res.render('dashboard/profile', {
+              data: dataObject
+            });
+          }
+        });
+      }
+    });
+  } else
+    res.redirect('/login');
+});
+
+router.get('/profile/:filename', (req, res) => {
+  if (req.isAuthenticated()) {
+    profileGfs.files.findOne({
+      filename: req.params.filename
+    }, (err, file) => {
+      if (err)
+        console.log(err);
+      else {
+        const readstream = profileGfs.createReadStream(file.filename);
+        readstream.pipe(res);
+      }
     });
   } else
     res.redirect('/login');
@@ -183,15 +358,21 @@ router.use('/logout', (req, res) => {
 
 router.use((req, res) => {
   if (req.isAuthenticated()) {
-    const dataObject = {
-      'title': '404 Error Page',
-      'user': login.user,
-      'isLogin': login.isLogin,
-      'files': false,
-      'isInputDoc': false
-    }
-    res.status(404).render('dashboard/404', {
-      data: dataObject
+    profileGfs.files.findOne({
+      'metadata.username': req.user.username
+    }, (err, profile) => {
+      if (err)
+        console.log(err);
+      else {
+        const dataObject = {
+          'title': '404 Error Page',
+          'user': req.user,
+          'profile': profile
+        };
+        res.status(404).render('dashboard/404', {
+          data: dataObject
+        });
+      }
     });
   } else
     res.redirect('/login');

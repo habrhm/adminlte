@@ -7,7 +7,11 @@
     <!-- Sidebar user panel (optional) -->
     <div class="user-panel">
       <div class="pull-left image">
-        <img src="/dist/img/photo.png" class="img-circle" alt="User Image" width="160" height="160">
+        <% if (data.profile) { %>
+        <img src="/dashboard/profile/<%= data.profile.filename %>" class="img-circle" alt="Profile Picture">
+        <% } else { %>
+        <img src="/dist/img/photo.png" class="img-circle" alt="Profile Picture">
+        <% } %>
       </div>
       <div class="pull-left info">
         <p><%= data.user.username %></p>
@@ -20,7 +24,7 @@
     <ul class="sidebar-menu" data-widget="tree">
       <li class="header">MAIN NAVIGATION</li>
       <!-- Optionally, you can add icons to the links -->
-      <li class="menu active">
+      <li class="menu">
         <a href="/dashboard">
           <i class="fa fa-home"></i><span>Home</span>
         </a>

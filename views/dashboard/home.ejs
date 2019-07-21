@@ -39,6 +39,7 @@
                   <th>Assigned To</th>
                   <th>Date of Assignment</th>
                   <th>Saved By</th>
+                  <th>Saved Date</th>
                   <th>File</th>
                   <% if (data.user.role !== 'User') { %>
                   <th>Action</th>
@@ -54,6 +55,7 @@
                   <td><%= file.metadata.assignedto %></td>
                   <td><%= file.metadata.dateofassignment %></td>
                   <td><%= file.metadata.savedby %></td>
+                  <td><%= file.metadata.saveddate %></td>
                   <td>
                     <button type="button" class="btn btn-info" data-toggle="modal" data-target="#modal-Document" onclick="userAction('<%= file.filename %>','open')">
                       <i class="fa fa-file"></i>
@@ -77,6 +79,7 @@
                   <th>Assigned To</th>
                   <th>Date of Assignment</th>
                   <th>Saved By</th>
+                  <th>Saved Date</th>
                   <th>File</th>
                   <% if (data.user.role !== 'User') { %>
                   <th>Action</th>
@@ -121,6 +124,12 @@
 <%- include("footer"); -%>
 
 <script>
+  function active_menu() {
+    let fullpath = window.location.pathname;
+    let currentLink = $('a[href="' + fullpath + '"]');
+    currentLink.parent().addClass("active");
+  }
+
   function userAction(filename, action) {
     if (action === 'open') {
       let ext = filename.split('.').pop();
@@ -136,7 +145,9 @@
       });
     }
   }
+
   $(function() {
+    active_menu();
     $('#docTable').DataTable({
       'paging': true,
       'lengthChange': false,

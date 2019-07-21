@@ -24,7 +24,7 @@ router.post('/', (req, res) => {
     username: req.body.username,
     password: req.body.password
   });
-  passport.authenticate('local', async (err, user, info) => {
+  passport.authenticate('local', (err, user, info) => {
     if (err)
       console.log(err);
     else if (!user) {
@@ -34,7 +34,7 @@ router.post('/', (req, res) => {
         isLoginFail: true,
       });
     } else {
-      await req.login(user, (err) => {
+      req.login(user, (err) => {
         if (err)
           console.log(err);
         else {
