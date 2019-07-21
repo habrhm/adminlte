@@ -21,16 +21,16 @@ const conn = mongoose.createConnection(mongoURI, {
 });
 
 //Init gfs
-let gfs;
+let docGfs;
 
 conn.once('open', () => {
   //Init stream
-  gfs = Grid(conn.db, mongoose.mongo);
-  gfs.collection('documents');
+  docGfs = Grid(conn.db, mongoose.mongo);
+  docGfs.collection('documents');
 });
 
 //Create storage engine
-const storage = new GridFsStorage({
+const docStorage = new GridFsStorage({
   url: mongoURI,
   options: {
     useNewUrlParser: true
@@ -59,13 +59,13 @@ const storage = new GridFsStorage({
   }
 });
 
-const upload = multer({
-  storage
+const docUpload = multer({
+  storage: docStorage
 });
 
 router.get('/', (req, res) => {
   if (req.isAuthenticated()) {
-    gfs.files.find().toArray(async (err, files) => {
+    docGfs.files.find().toArray(async (err, files) => {
       if (err)
         console.log(err);
       else {
@@ -74,9 +74,8 @@ router.get('/', (req, res) => {
           'title': 'Home',
           'user': user,
           'isLogin': login.isLogin,
-          'files': (!files || files.length === 0 ? false : files),
-          'isInputDoc': false
-        }
+          'files': (!files || files.length === 0 ? false : files)
+        };
         res.render('dashboard/home', {
           data: dataObject
         });
@@ -87,15 +86,14 @@ router.get('/', (req, res) => {
     res.redirect('/login');
 });
 
-router.get('/document', (req, res) => {
+router.get('/document', async (req, res) => {
   if (req.isAuthenticated()) {
+    const user = await User.findById(login.user._id);
     const dataObject = {
       'title': 'Input Document',
-      'user': login.user,
-      'isLogin': login.isLogin,
-      'files': false,
+      'user': user,
       'isInputDoc': false
-    }
+    };
     res.render('dashboard/document', {
       data: dataObject
     });
@@ -110,21 +108,20 @@ router.post('/document', (req, res) => {
     const p = progress({
       length: req.headers['content-length'],
     });
-    const u = upload.single('uploaddocument');
+    const u = docUpload.single('uploaddocument');
     req.pipe(p);
     p.headers = req.headers;
     p.on('progress', (progress) => {
       const percent = parseInt(progress.percentage);
       io.emit('uploading', percent);
     });
-    u(p, res, () => {
+    u(p, res, async () => {
+      const user = await User.findById(login.user._id);
       const dataObject = {
         'title': 'Input Document',
-        'user': login.user,
-        'isLogin': login.isLogin,
-        'files': false,
+        'user': user,
         'isInputDoc': true,
-      }
+      };
       res.render('dashboard/document', {
         data: dataObject
       });
@@ -135,13 +132,13 @@ router.post('/document', (req, res) => {
 
 router.get('/document/:filename', async (req, res) => {
   if (req.isAuthenticated()) {
-    await gfs.files.findOne({
+    await docGfs.files.findOne({
       filename: req.params.filename
     }, (err, file) => {
       if (err)
         console.log(err);
       else {
-        const readstream = gfs.createReadStream(file.filename);
+        const readstream = docGfs.createReadStream(file.filename);
         readstream.pipe(res);
       }
     });
@@ -151,7 +148,7 @@ router.get('/document/:filename', async (req, res) => {
 
 router.delete('/document/:filename', async (req, res) => {
   if (req.isAuthenticated()) {
-    await gfs.remove({
+    await docGfs.remove({
       filename: req.params.filename,
       root: 'documents'
     }, (err, gridStore) => {
@@ -159,6 +156,20 @@ router.delete('/document/:filename', async (req, res) => {
         console.log(err);
       else
         res.status(200).send("success");
+    });
+  } else
+    res.redirect('/login');
+});
+
+router.get('/profile', async (req, res) => {
+  if (req.isAuthenticated()) {
+    const user = await User.findById(login.user._id);
+    const dataObject = {
+      'title': 'Profile',
+      'user': user
+    };
+    res.render('dashboard/profile', {
+      data: dataObject
     });
   } else
     res.redirect('/login');

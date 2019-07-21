@@ -52,13 +52,7 @@
               <div class="form-group">
                 <label for="inputAssignedTo" class="col-sm-2 control-label">Assigned To</label>
                 <div class="col-sm-8">
-                  <select class="form-control select2" id="inputAssignedTo" name="assignedto" style="width: 100%;" required>
-                    <option value="Mula Putera, SE.M.Sc">Mula Putera, SE.M.Sc</option>
-                    <option value="Sylvia Kusumawati, S.Hut.MM">Sylvia Kusumawati, S.Hut.MM</option>
-                    <option value="Christieni Maria, S.TP">Christieni Maria, S.TP</option>
-                    <option value="Susanto, S.TP">Susanto, S.TP</option>
-                    <option value="Bina Manaseh Sianipar, SP">Bina Manaseh Sianipar, SP</option>
-                  </select>
+                  <input type="text" class="form-control" id="inputAssignedTo" name="assignedto" required>
                 </div>
               </div>
               <!-- Date -->
@@ -77,7 +71,7 @@
               <div class="form-group">
                 <label for="inputSavedBy" class="col-sm-2 control-label">Saved By</label>
                 <div class="col-sm-8">
-                  <input type="text" class="form-control" id="inputSavedBy" name="savedby" value="<%= data.user.fullname %>" required>
+                  <input type="text" class="form-control" id="inputSavedBy" name="savedby" required>
                 </div>
               </div>
               <!-- /.form group -->
@@ -157,8 +151,6 @@
       $('#progressBox').show();
       $('#progressbar').attr('aria-valuenow', percentage).css('width', percentage + '%');
     });
-    //Initialize Select2 Elements
-    $('.select2').select2();
     //Date picker
     $('#datepicker').datepicker({
       format: 'dd/mm/yyyy',

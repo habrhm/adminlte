@@ -4,22 +4,16 @@ const express = require('express');
 const passport = require('passport');
 const register = require('./register');
 const User = require('./../../models/User');
-
 const router = express.Router();
-
-passport.use(User.createStrategy());
-
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
 
 router.get('/', (req, res) => {
   if (req.isAuthenticated())
     res.redirect('/dashboard');
   else {
     res.render('home/login', {
-      title: 'Log in',
+      title: 'SIKEMPAS | Log in',
       isRegSuccess: register.isSuccess,
-      isWrongPass: false,
+      isLoginFail: false,
     });
     register.isSuccess = false;
   }
@@ -35,9 +29,9 @@ router.post('/', (req, res) => {
       console.log(err);
     else if (!user) {
       res.render('home/login', {
-        title: 'Log in',
+        title: 'SIKEMPAS | Log in',
         isRegSuccess: register.isSuccess,
-        isWrongPass: true,
+        isLoginFail: true,
       });
     } else {
       await req.login(user, (err) => {

@@ -1,10 +1,10 @@
 //jshint esversion:6
 
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 const passportLocalMongoose = require('passport-local-mongoose');
 
-const userSchema = mongoose.Schema({
-  fullname: String,
+const userSchema = Schema({
   username: {
     type: String,
     index: {
@@ -12,12 +12,6 @@ const userSchema = mongoose.Schema({
     }
   },
   password: String,
-  email: {
-    type: String,
-    index: {
-      unique: true,
-    }
-  },
   registerAt: String,
   role: String
 });

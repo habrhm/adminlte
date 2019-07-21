@@ -59,13 +59,13 @@
                       <i class="fa fa-file"></i>
                     </button>
                   </td>
+                  <% if (data.user.role !== 'User') { %>
                   <td>
-                    <% if (data.user.role !== 'User') { %>
                     <button type="button" class="btn btn-danger" onclick="userAction('<%= file.filename %>','delete')">
                       <i class="fa fa-trash"></i>
                     </button>
-                    <% } %>
                   </td>
+                  <% } %>
                 </tr>
                 <% } %>
               </tbody>
