@@ -10,6 +10,7 @@ const GridFsStorage = require('multer-gridfs-storage');
 const Grid = require('gridfs-stream');
 const progress = require('progress-stream');
 const login = require('./../home/login');
+const User = require('./../../models/User');
 
 //Mongo URI
 const mongoURI = process.env.DB_CONNECTION;
@@ -48,12 +49,14 @@ const docStorage = new GridFsStorage({
           const filename = buf.toString('hex') + path.extname(file.originalname);
           const dt = new Date();
           const month = (dt.getMonth() + 1);
-          const date = dt.getDate() + "/" + (month < 10 ? '0' + month : month) + "/" + dt.getFullYear()
+          const date = dt.getDate() + "/" + (month < 10 ? '0' + month : month) + "/" + dt.getFullYear();
           const fileInfo = {
             filename: filename,
             metadata: {
-              'docid': req.body.docid,
-              'doctitle': req.body.doctitle,
+              'category': req.body.category,
+              'id': req.body.id,
+              'title': req.body.title,
+              'srcorobj': req.body.srcorobj,
               'assignedto': req.body.assignedto,
               'dateofassignment': req.body.dateofassignment,
               'savedby': req.body.savedby,
@@ -344,6 +347,223 @@ router.get('/profile/:filename', (req, res) => {
       else {
         const readstream = profileGfs.createReadStream(file.filename);
         readstream.pipe(res);
+      }
+    });
+  } else
+    res.redirect('/login');
+});
+
+router.get('/user', (req, res) => {
+  if (req.isAuthenticated()) {
+    profileGfs.files.findOne({
+      'metadata.username': req.user.username
+    }, async (err, profile) => {
+      if (err)
+        console.log(err);
+      else {
+        if (req.user.role !== 'User') {
+          try {
+            await User.find().then(users => {
+              const dataObject = {
+                'title': 'Manage User',
+                'user': req.user,
+                'profile': profile,
+                'users': users,
+                'flag': module.exports.flag,
+                'errMessage': module.exports.errMessage
+              };
+              module.exports.flag = 0;
+              res.render('dashboard/user', {
+                data: dataObject
+              });
+            });
+          } catch (e) {
+            console.log(e);
+          }
+        } else {
+          const dataObject = {
+            'title': '404 Error Page',
+            'user': req.user,
+            'profile': profile
+          };
+          res.status(404).render('dashboard/404', {
+            data: dataObject
+          });
+        }
+      }
+    });
+  } else
+    res.redirect('/login');
+});
+
+router.post('/user', (req, res) => {
+  if (req.isAuthenticated()) {
+    profileGfs.files.findOne({
+      'metadata.username': req.user.username
+    }, async (err, profile) => {
+      if (err)
+        console.log(err);
+      else {
+        if (req.user.role !== 'User') {
+          const dt = new Date();
+          try {
+            await User.register(new User({
+              username: req.body.username,
+              registerAt: dt.toLocaleDateString('en-US', {
+                month: 'short',
+                year: 'numeric'
+              }),
+              role: 'User'
+            }), req.body.password).then(() => {
+              module.exports.flag = 1;
+              res.redirect('/dashboard/user');
+            });
+          } catch (e) {
+            module.exports.flag = 4;
+            module.exports.errMessage = e.message;
+            res.redirect('/dashboard/user');
+          }
+        } else {
+          const dataObject = {
+            'title': '404 Error Page',
+            'user': req.user,
+            'profile': profile
+          };
+          res.status(404).render('dashboard/404', {
+            data: dataObject
+          });
+        }
+      }
+    });
+  } else
+    res.redirect('/login');
+});
+
+router.get('/user/:id', (req, res) => {
+  if (req.isAuthenticated()) {
+    profileGfs.files.findOne({
+      'metadata.username': req.user.username
+    }, async (err, profile) => {
+      if (err)
+        console.log(err);
+      else {
+        if (req.user.role !== 'User') {
+          try {
+            await User.findById(req.params.id).then(user => {
+              const dataObject = {
+                'modalTitle': 'Edit User',
+                'modalSubmit': 'Update',
+                'user': user
+              };
+              res.send({
+                data: dataObject
+              });
+            });
+          } catch (e) {
+            console.log(e);
+          }
+        } else {
+          const dataObject = {
+            'title': '404 Error Page',
+            'user': req.user,
+            'profile': profile
+          };
+          res.status(404).render('dashboard/404', {
+            data: dataObject
+          });
+        }
+      }
+    });
+  } else
+    res.redirect('/login');
+});
+
+router.post('/user/:id', (req, res) => {
+  if (req.isAuthenticated()) {
+    profileGfs.files.findOne({
+      'metadata.username': req.user.username
+    }, async (err, profile) => {
+      if (err)
+        console.log(err);
+      else {
+        if (req.user.role !== 'User') {
+          try {
+            await User.updateOne({
+              _id: req.params.id
+            }, {
+              $set: {
+                'role': req.body.role
+              }
+            }).then(() => {
+              module.exports.flag = 2;
+              res.redirect('/dashboard/user');
+            });
+          } catch (e) {
+            console.log(e);
+          }
+        } else {
+          const dataObject = {
+            'title': '404 Error Page',
+            'user': req.user,
+            'profile': profile
+          };
+          res.status(404).render('dashboard/404', {
+            data: dataObject
+          });
+        }
+      }
+    });
+  } else
+    res.redirect('/login');
+});
+
+router.delete('/user/:username', (req, res) => {
+  if (req.isAuthenticated()) {
+    profileGfs.files.findOne({
+      'metadata.username': req.user.username
+    }, async (err, profile) => {
+      if (err)
+        console.log(err);
+      else {
+        if (req.user.role !== 'User') {
+          try {
+            await User.deleteOne({
+              username: req.params.username
+            }).then(() => {
+              profileGfs.files.findOne({
+                'metadata.username': req.params.username
+              }, (err, p) => {
+                if (err)
+                  console.log(err);
+                else {
+                  if (p && p.length > 0) {
+                    console.log(p);
+                    profileGfs.remove({
+                      'filename': p.filename,
+                      root: 'profiles'
+                    }, (err, gridStore) => {
+                      if (err)
+                        console.log(err);
+                    });
+                  }
+                }
+              });
+              module.exports.flag = 3;
+              res.status(200).send("success");
+            });
+          } catch (e) {
+            console.log(e);
+          }
+        } else {
+          const dataObject = {
+            'title': '404 Error Page',
+            'user': req.user,
+            'profile': profile
+          };
+          res.status(404).render('dashboard/404', {
+            data: dataObject
+          });
+        }
       }
     });
   } else

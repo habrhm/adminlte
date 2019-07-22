@@ -44,15 +44,34 @@
           <form class="form-horizontal" action="/dashboard/document" method="post" enctype="multipart/form-data">
             <div class="box-body">
               <div class="form-group">
+                <label for="inputCategory" class="col-sm-2 control-label">Category</label>
+                <div class="col-sm-8">
+                  <select class="form-control select2" id="inputCategory" name="category" style="width: 100%;" required>
+                    <option value="Undangan">Undangan</option>
+                    <option value="Laporan">Laporan</option>
+                    <option value="Surat Keputusan">Surat Keputusan</option>
+                    <option value="Rekomendasi Teknis">Rekomendasi Teknis</option>
+                    <option value="Permohonan Bantuan">Permohonan Bantuan</option>
+                    <option value="Peraturan">Peraturan</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
                 <label for="inputDocumentID" class="col-sm-2 control-label">Document ID</label>
                 <div class="col-sm-8">
-                  <input type="text" class="form-control" id="inputDocumentID" name="docid" placeholder="Please Input the Dcoument ID" required>
+                  <input type="text" class="form-control" id="inputDocumentID" name="id" placeholder="Please Input the Dcoument ID" required>
                 </div>
               </div>
               <div class="form-group">
                 <label for="inputDocumentTitle" class="col-sm-2 control-label">Document Title</label>
                 <div class="col-sm-8">
-                  <input type="text" class="form-control" id="inputDocumentTitle" name="doctitle" placeholder="Please Input the Document Title" required>
+                  <input type="text" class="form-control" id="inputDocumentTitle" name="title" placeholder="Please Input the Document Title" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="inputDocumentSrcObj" class="col-sm-2 control-label">Source or Objective</label>
+                <div class="col-sm-8">
+                  <input type="text" class="form-control" id="inputDocumentSrcObj" name="srcorobj" placeholder="Please Input the Source or Objective" required>
                 </div>
               </div>
               <div class="form-group">
@@ -80,7 +99,7 @@
                   <input type="text" class="form-control" id="inputSavedBy" name="savedby" value="<%= data.profile.metadata.fullname %>" required>
                   <% } else { %>
                   <input type="text" class="form-control" id="inputSavedBy" name="savedby" placeholder="Please Input the Saved By" required>
-                  <% }%>
+                  <% } %>
                 </div>
               </div>
               <div class="form-group">
@@ -170,6 +189,8 @@
       $('#progressBox').show();
       $('#progressbar').attr('aria-valuenow', percentage).css('width', percentage + '%');
     });
+    //Initialize Select2 Elements
+    $('.select2').select2();
     //Date picker
     $('#datepicker').datepicker({
       format: 'dd/mm/yyyy',

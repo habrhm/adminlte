@@ -34,6 +34,13 @@
           <i class="fa fa-folder-open"></i><span>Input Document</span>
         </a>
       </li>
+      <% if (data.user.role !== 'User') { %>
+      <li class="menu">
+        <a href="/dashboard/user">
+          <i class="fa fa-user"></i><span>Manage User</span>
+        </a>
+      </li>
+      <% } %>
     </ul>
     <!-- /.sidebar-menu -->
   </section>

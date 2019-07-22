@@ -40,9 +40,10 @@ router.post('/', async (req, res) => {
           year: 'numeric'
         }),
         role: 'User'
-      }), password);
-      module.exports.isSuccess = true;
-      res.redirect('/login');
+      }), password).then(() => {
+        module.exports.isSuccess = true;
+        res.redirect('/login');
+      });
     } catch (e) {
       res.render('home/register', {
         title: 'SIKEMPAS | Registration',

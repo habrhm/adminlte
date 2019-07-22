@@ -34,8 +34,10 @@
             <table id="docTable" class="table table-bordered table-hover">
               <thead>
                 <tr>
+                  <th>Category</th>
                   <th>Document ID</th>
                   <th>Document Title</th>
+                  <th>Source or Objective</th>
                   <th>Assigned To</th>
                   <th>Date of Assignment</th>
                   <th>Saved By</th>
@@ -50,8 +52,10 @@
               <tbody>
                 <% for (let file of data.files) { %>
                 <tr>
-                  <td><%= file.metadata.docid %></td>
-                  <td><%= file.metadata.doctitle %></td>
+                  <td><%= file.metadata.category %></td>
+                  <td><%= file.metadata.id %></td>
+                  <td><%= file.metadata.title %></td>
+                  <td><%= file.metadata.srcorobj %></td> 
                   <td><%= file.metadata.assignedto %></td>
                   <td><%= file.metadata.dateofassignment %></td>
                   <td><%= file.metadata.savedby %></td>
@@ -74,8 +78,10 @@
               <% } %>
               <tfoot>
                 <tr>
+                  <th>Category</th>
                   <th>Document ID</th>
                   <th>Document Title</th>
+                  <th>Source or Objective</th>
                   <th>Assigned To</th>
                   <th>Date of Assignment</th>
                   <th>Saved By</th>

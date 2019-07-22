@@ -1,0 +1,216 @@
+<%- include("header"); -%>
+<%- include("sidebar"); -%>
+
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <% if (data.flag > 0 && data.flag < 4) { %>
+    <div class="alert alert-success alert-dismissible">
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+      <h4><i class="icon fa fa-check"></i> Alert!</h4>
+      <% if (data.flag == 1) { %>
+      The user have been added successfully.
+      <% } else if (data.flag == 2) { %>
+      The user have been updated successfully.
+      <% } else { %>
+      The user have been deleted successfully.
+      <% } %>
+    </div>
+    <% } else if (data.flag == 4) { %>
+    <div class="alert alert-danger alert-dismissible">
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+      <h4><i class="icon fa fa-ban"></i> Alert!</h4>
+      <%= data.errMessage %>
+    </div>
+    <% } %>
+    <h1>
+      <%= data.title %>
+    </h1>
+  </section>
+
+  <!-- Main content -->
+  <section class="content container-fluid">
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="box">
+          <div class="box-header">
+            <h3 class="box-title">
+              <button type="button" class="btn btn-info" data-toggle="modal" data-target="#modal-User" onclick="userAction('','add')">
+                <i class="fa fa-fw fa-user-plus"></i>
+              </button>
+            </h3>
+          </div>
+          <!-- /.box-header -->
+          <div class="box-body">
+            <table id="userTable" class="table table-bordered table-hover">
+              <thead>
+                <tr>
+                  <th>Username</th>
+                  <th>Register At</th>
+                  <th>Role</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% for (let user of data.users) { %>
+                <tr>
+                  <td><%= user.username %></td>
+                  <td><%= user.registerAt %></td>
+                  <td><%= user.role %></td>
+                  <td>
+                    <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#modal-User" onclick="userAction('<%= user._id %>','edit')">
+                      <i class="fa fa-edit"></i>
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="userAction('<%= user.username %>','delete')">
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+                <% } %>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th>Username</th>
+                  <th>Register At</th>
+                  <th>Role</th>
+                  <th>Action</th>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          <!-- /.box-body -->
+        </div>
+        <!-- /.box -->
+      </div>
+      <!-- /.col -->
+    </div>
+    <!-- /.row -->
+  </section>
+  <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+
+<div class="modal fade" id="modal-User">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="modalTitle">Add New User</h4>
+      </div>
+      <div class="modal-body">
+        <!-- form start -->
+        <form class="form-horizontal" id="modalForm" action="/dashboard/user" method="POST">
+          <div class="box-body">
+            <div class="form-group">
+              <label for="inputUsername" class="col-sm-2 control-label">Username</label>
+
+              <div class="col-sm-10">
+                <input type="hidden" id="id" name="id">
+                <input type="text" id="inputUsername" name="username" class="form-control" placeholder="Please Input the Username" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputPassword" class="col-sm-2 control-label">Password</label>
+
+              <div class="col-sm-10">
+                <input type="password" id="inputPassword" name="password" class="form-control" placeholder="Please Input the Password">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputRole" class="col-sm-2 control-label">Role</label>
+
+              <div class="col-sm-10">
+                <select class="form-control" id="inputRole" name="role">
+                  <option value="User">User</option>
+                  <option value="Admin">Admin</option>
+                </select>
+              </div>
+            </div>
+
+          </div>
+          <!-- /.box-body -->
+          <div class="box-footer">
+            <button type="button" data-dismiss="modal" class="btn btn-default">Cancel</button>
+            <button type="submit" id="modalSubmit" class="btn btn-info pull-right">Add</button>
+          </div>
+          <!-- /.box-footer -->
+        </form>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+
+<%- include("footer"); -%>
+
+<script type="text/javascript">
+  $('form[action="/dashboard/user"]').on('submit', function() {
+    $(this).find('button[type="submit"]').prop('disabled', true);
+  });
+
+  function active_menu() {
+    let fullpath = window.location.pathname;
+    let currentLink = $('a[href="' + fullpath + '"]');
+    currentLink.parent().addClass("active");
+  }
+
+  $(function() {
+    active_menu();
+    $('#userTable').DataTable({
+      'paging': true,
+      'lengthChange': false,
+      'searching': true,
+      'ordering': true,
+      'info': true,
+      'autoWidth': false
+    })
+  })
+
+  function userAction(value, action) {
+    var base_url = window.location.origin;
+    if (action == 'add') {
+      $('#id').val("");
+      $('#inputUsername').val("");
+      $('#inputPassword').val("");
+      $('#inputRole').val("User");
+
+      $('#inputUsername').attr('disabled', false);
+      $("label[for='inputPassword']").show();
+      $('#inputPassword').show();
+
+      $('#modalTitle').html("Add New User");
+      $('#modalSubmit').html("Add");
+      $('#modalForm').attr('action', '/dashboard/user');
+    } else if (action == 'edit') {
+      $.ajax({
+        type: 'GET',
+        url: base_url + '/dashboard/user/' + value,
+        success: function(data) {
+          $('#id').val(data.data.user._id);
+          $('#inputUsername').val(data.data.user.username);
+          $('#inputRole').val(data.data.user.role);
+
+          $('#inputUsername').attr('disabled', true);
+          $("label[for='inputPassword']").hide();
+          $('#inputPassword').hide();
+
+          $('#modalTitle').html(data.data.modalTitle);
+          $('#modalSubmit').html(data.data.modalSubmit);
+          $('#modalForm').attr('action', '/dashboard/user/' + value);
+        }
+      });
+    } else if (action == 'delete') {
+      $.ajax({
+        type: 'DELETE',
+        url: base_url + '/dashboard/user/' + value,
+        success: function(data) {
+          location.reload();
+        }
+      });
+    }
+  }
+</script>

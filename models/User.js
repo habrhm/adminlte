@@ -11,7 +11,6 @@ const userSchema = Schema({
       unique: true,
     }
   },
-  password: String,
   registerAt: String,
   role: String
 });
