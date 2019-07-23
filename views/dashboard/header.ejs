@@ -18,11 +18,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <!-- Ionicons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/4.5.6/css/ionicons.min.css">
   <!-- DataTables -->
-  <link rel="stylesheet" href="https://cdn.datatables.net/v/bs/dt-1.10.18/r-2.2.2/sc-2.0.0/datatables.min.css"/>
+  <link rel="stylesheet" href="https://cdn.datatables.net/v/bs/dt-1.10.18/r-2.2.2/sc-2.0.0/datatables.min.css">
   <!-- bootstrap datepicker -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
   <!-- Select2 -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.7/css/select2.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.7/css/select2.min.css">
   <!-- Theme style -->
   <link rel="stylesheet" href="/dist/css/AdminLTE.min.css">
   <!-- AdminLTE Skins. We have chosen the skin-blue for this starter
@@ -39,6 +39,22 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
   <!-- Google Font -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
+  <style>
+    .titleHeader {
+      float: left;
+      background-color: transparent;
+      background-image: none;
+      padding: 15px 15px;
+      color: white;
+      font-weight: bold;
+    }
+
+    @media screen and (max-width: 500px) {
+      .titleHeader {
+        display: none !important;
+      }
+    }
+  </style>
 </head>
 <!--
 BODY TAG OPTIONS:
@@ -81,11 +97,9 @@ desired effect
         <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">
           <span class="sr-only">Toggle navigation</span>
         </a>
-        <form class="navbar-form navbar-left">
-          <div class="form-group titleHeader">
-            <h5 style="color: white; font-weight: bold;">SISTEM DOKUMENTASI TERPADU KELAPA SAWIT</h5>
-          </div>
-        </form>
+
+        <span class="titleHeader">SISTEM DOKUMENTASI TERPADU KELAPA SAWIT</span>
+
         <!-- Navbar Right Menu -->
         <div class="navbar-custom-menu">
           <ul class="nav navbar-nav">
