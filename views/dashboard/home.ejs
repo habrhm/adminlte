@@ -5,12 +5,16 @@
 <div class="content-wrapper">
   <!-- Content Header (Page header) -->
   <section class="content-header">
-    <% if (data.isLogin) { %>
+    <% if (data.flag) { %>
     <div class="alert alert-success alert-dismissible">
       <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
       <h4><i class="icon fa fa-check"></i> Alert!</h4>
+      <% if (data.flag == 1) { %>
       <% let dt = new Date(); %>
       Login succeed. Last logged in : <%= dt.toDateString() %>
+      <% } else { %>
+      The Document have been deleted successfully.
+      <% } %>
     </div>
     <% } %>
     <h1>
@@ -31,20 +35,20 @@
           </div>
           <!-- /.box-header -->
           <div class="box-body">
-            <table id="docTable" class="table table-bordered table-hover">
+            <table id="docTable" class="table table-bordered table-hover" cellspacing="0" width="100%">
               <thead>
                 <tr>
-                  <th>Category</th>
-                  <th>Document ID</th>
-                  <th>Document Title</th>
-                  <th>Source or Objective</th>
-                  <th>Assigned To</th>
-                  <th>Date of Assignment</th>
-                  <th>Saved By</th>
-                  <th>Saved Date</th>
-                  <th>File</th>
+                  <th class="all">Category</th>
+                  <th class="all">Document ID</th>
+                  <th class="all">Document Title</th>
+                  <th class="all">Source or Objective</th>
+                  <th class="all">Assigned To</th>
+                  <th class="all">Date of Assignment</th>
+                  <th class="all">Saved By</th>
+                  <th class="all">Saved Date</th>
+                  <th class="all">File</th>
                   <% if (data.user.role !== 'User') { %>
-                  <th>Action</th>
+                  <th class="all">Action</th>
                   <% } %>
                 </tr>
               </thead>
@@ -55,7 +59,7 @@
                   <td><%= file.metadata.category %></td>
                   <td><%= file.metadata.id %></td>
                   <td><%= file.metadata.title %></td>
-                  <td><%= file.metadata.srcorobj %></td> 
+                  <td><%= file.metadata.srcorobj %></td>
                   <td><%= file.metadata.assignedto %></td>
                   <td><%= file.metadata.dateofassignment %></td>
                   <td><%= file.metadata.savedby %></td>
@@ -78,17 +82,17 @@
               <% } %>
               <tfoot>
                 <tr>
-                  <th>Category</th>
-                  <th>Document ID</th>
-                  <th>Document Title</th>
-                  <th>Source or Objective</th>
-                  <th>Assigned To</th>
-                  <th>Date of Assignment</th>
-                  <th>Saved By</th>
-                  <th>Saved Date</th>
-                  <th>File</th>
+                  <th class="all">Category</th>
+                  <th class="all">Document ID</th>
+                  <th class="all">Document Title</th>
+                  <th class="all">Source or Objective</th>
+                  <th class="all">Assigned To</th>
+                  <th class="all">Date of Assignment</th>
+                  <th class="all">Saved By</th>
+                  <th class="all">Saved Date</th>
+                  <th class="all">File</th>
                   <% if (data.user.role !== 'User') { %>
-                  <th>Action</th>
+                  <th class="all">Action</th>
                   <% } %>
                 </tr>
               </tfoot>
@@ -142,11 +146,23 @@
       $('#srcDoc').attr('height', (ext === 'pdf' ? '450px' : '100%'));
       $('#srcDoc').attr('src', '/dashboard/document/' + filename);
     } else if (action === 'delete') {
-      $.ajax({
-        type: 'delete',
-        url: window.location.origin + '/dashboard/document/' + filename,
-        success: function(data) {
-          location.reload();
+      swal({
+        title: "Are you sure?",
+        text: "Once deleted, you will not be able to recover this document!",
+        icon: "warning",
+        buttons: true,
+        dangerMode: true,
+        closeOnClickOutside: false,
+        closeOnEsc: false
+      }).then((willDelete) => {
+        if (willDelete) {
+          $.ajax({
+            type: 'delete',
+            url: window.location.origin + '/dashboard/document/' + filename,
+            success: function(data) {
+              location.reload();
+            }
+          });
         }
       });
     }
@@ -155,8 +171,10 @@
   $(function() {
     active_menu();
     $('#docTable').DataTable({
+      'responsive': true,
+      'scrollX': true,
       'paging': true,
-      'lengthChange': false,
+      'lengthChange': true,
       'searching': true,
       'ordering': true,
       'info': true,

@@ -204,11 +204,23 @@
         }
       });
     } else if (action == 'delete') {
-      $.ajax({
-        type: 'DELETE',
-        url: base_url + '/dashboard/user/' + value,
-        success: function(data) {
-          location.reload();
+      swal({
+        title: "Are you sure?",
+        text: "Once deleted, you will not be able to recover this user!",
+        icon: "warning",
+        buttons: true,
+        dangerMode: true,
+        closeOnClickOutside: false,
+        closeOnEsc: false
+      }).then((willDelete) => {
+        if (willDelete) {
+          $.ajax({
+            type: 'DELETE',
+            url: base_url + '/dashboard/user/' + value,
+            success: function(data) {
+              location.reload();
+            }
+          });
         }
       });
     }

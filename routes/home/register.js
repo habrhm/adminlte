@@ -10,7 +10,7 @@ router.get('/', (req, res) => {
     res.redirect('/dashboard');
   else {
     res.render('home/register', {
-      title: 'SIKEMPAS | Registration',
+      title: 'SINTERKLAS | Registration',
       isNotMatch: false,
       isError: false,
       errMessage: '',
@@ -25,7 +25,7 @@ router.post('/', async (req, res) => {
   const dt = new Date();
   if (password !== req.body.password2) {
     res.render('home/register', {
-      title: 'SIKEMPAS | Registration',
+      title: 'SINTERKLAS | Registration',
       isNotMatch: true,
       isError: false,
       errMessage: '',
@@ -46,7 +46,7 @@ router.post('/', async (req, res) => {
       });
     } catch (e) {
       res.render('home/register', {
-        title: 'SIKEMPAS | Registration',
+        title: 'SINTERKLAS | Registration',
         isNotMatch: false,
         isError: true,
         errMessage: e.message,

@@ -1,10 +1,10 @@
 <%- include("header"); -%>
 
-<body class="hold-transition login-page">
+<body class="hold-transition login-page" scroll="no" style="overflow: hidden">
   <div class="login-box">
     <div class="login-logo">
       <a href="/"><img src="/dist/img/applogo.png" width="160" height="160"></a>
-      <p><b>SI</b>KEMPAS<p>
+      <p><b>SIN</b>TERKLAS<p>
     </div>
     <!-- /.login-logo -->
     <div class="login-box-body">
@@ -54,6 +54,7 @@
     <!-- /.login-box-body -->
   </div>
   <!-- /.login-box -->
+  <canvas class="background"></canvas>
 
   <%- include("footer"); -%>
 
@@ -66,6 +67,23 @@
         checkboxClass: 'icheckbox_square-blue',
         radioClass: 'iradio_square-blue',
         increaseArea: '20%' /* optional */
+      });
+      Particles.init({
+        selector: '.background',
+        color: '#000000',
+        maxParticles: 130,
+        connectParticles: true,
+        responsive: [{
+          breakpoint: 768,
+          options: {
+            maxParticles: 80
+          }
+        }, {
+          breakpoint: 375,
+          options: {
+            maxParticles: 50
+          }
+        }]
       });
     });
   </script>

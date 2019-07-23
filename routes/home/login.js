@@ -11,7 +11,7 @@ router.get('/', (req, res) => {
     res.redirect('/dashboard');
   else {
     res.render('home/login', {
-      title: 'SIKEMPAS | Log in',
+      title: 'SINTERKLAS | Log in',
       isRegSuccess: register.isSuccess,
       isLoginFail: false,
     });
@@ -29,7 +29,7 @@ router.post('/', (req, res) => {
       console.log(err);
     else if (!user) {
       res.render('home/login', {
-        title: 'SIKEMPAS | Log in',
+        title: 'SINTERKLAS | Log in',
         isRegSuccess: register.isSuccess,
         isLoginFail: true,
       });
@@ -46,7 +46,7 @@ router.post('/', (req, res) => {
             req.session.cookie.expires = false;
           res.redirect('/dashboard');
           module.exports.user = user;
-          module.exports.isLogin = true;
+          module.exports.isLogin = 1;
         }
       });
     }

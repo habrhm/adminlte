@@ -1,10 +1,10 @@
 <%- include("header"); -%>
 
-<body class="hold-transition register-page">
+<body class="hold-transition register-page" scroll="no" style="overflow: hidden">
   <div class="register-box">
     <div class="register-logo">
       <a href="/"><img src="/dist/img/applogo.png" width="160" height="160"></a>
-      <p><b>SI</b>KEMPAS<p>
+      <p><b>SIN</b>TERKLAS<p>
     </div>
 
     <div class="register-box-body">
@@ -50,11 +50,31 @@
     <!-- /.form-box -->
   </div>
   <!-- /.register-box -->
+  <canvas class="background"></canvas>
 
   <%- include("footer"); -%>
 
   <script>
     $('form[action="/register"]').on('submit', function() {
       $(this).find('button[type="submit"]').prop('disabled', true);
+    });
+    $(function() {
+      Particles.init({
+        selector: '.background',
+        color: '#000000',
+        maxParticles: 130,
+        connectParticles: true,
+        responsive: [{
+          breakpoint: 768,
+          options: {
+            maxParticles: 80
+          }
+        }, {
+          breakpoint: 375,
+          options: {
+            maxParticles: 50
+          }
+        }]
+      });
     });
   </script>

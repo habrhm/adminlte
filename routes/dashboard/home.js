@@ -139,14 +139,14 @@ router.get('/', (req, res) => {
             const dataObject = {
               'title': 'Home',
               'user': req.user,
-              'isLogin': login.isLogin,
+              'flag': login.isLogin,
               'files': (!files || files.length === 0 ? false : files),
               'profile': profile
             };
             res.render('dashboard/home', {
               data: dataObject
             });
-            login.isLogin = false;
+            login.isLogin = 0;
           }
         });
       }
@@ -173,7 +173,6 @@ router.get('/document', (req, res) => {
         res.render('dashboard/document', {
           data: dataObject
         });
-        login.isLogin = false;
       }
     });
   } else
@@ -250,8 +249,10 @@ router.delete('/document/:filename', (req, res) => {
     }, (err, gridStore) => {
       if (err)
         console.log(err);
-      else
+      else {
+        login.isLogin = 2;
         res.status(200).send("success");
+      }
     });
   } else
     res.redirect('/login');
