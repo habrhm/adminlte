@@ -73,51 +73,12 @@ const docStorage = new GridFsStorage({
 
 const docUpload = multer({
   storage: docStorage,
+  limits: {
+    fileSize: 4 * 1024 * 1024
+  },
   fileFilter: function(req, file, cb) {
     if (file.mimetype !== 'application/pdf' && file.mimetype !== 'image/jpeg') {
       req.fileValidationError = 'File type must be PDF or JPG/JPEG.';
-      cb(null, false);
-    } else
-      cb(null, true);
-  }
-});
-
-const profileStorage = new GridFsStorage({
-  url: mongoURI,
-  options: {
-    useNewUrlParser: true
-  },
-  file: (req, file) => {
-    return new Promise((resolve, reject) => {
-      crypto.randomBytes(16, (err, buf) => {
-        if (err)
-          return reject(err);
-        else {
-          const filename = buf.toString('hex') + path.extname(file.originalname);
-          const fileInfo = {
-            filename: filename,
-            metadata: {
-              'username': login.user.username,
-              'fullname': req.body.fullname,
-              'email': req.body.email,
-              'nip': req.body.nip,
-              'birthday': req.body.birthday,
-              'phone': req.body.phone
-            },
-            bucketName: 'profiles'
-          };
-          resolve(fileInfo);
-        }
-      });
-    });
-  }
-});
-
-const profileUpload = multer({
-  storage: profileStorage,
-  fileFilter: function(req, file, cb) {
-    if (file.mimetype !== 'image/jpeg') {
-      req.fileValidationError = 'File type must be JPG/JPEG.';
       cb(null, false);
     } else
       cb(null, true);
@@ -193,9 +154,29 @@ router.post('/document', (req, res) => {
       io.emit('uploading', percent);
     });
     u(p, res, (err) => {
-      if (err)
-        console.log(err);
-      else {
+      if (err) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          profileGfs.files.findOne({
+            'metadata.username': req.user.username
+          }, (error, profile) => {
+            if (error)
+              console.log(error);
+            else {
+              const dataObject = {
+                'title': 'Input Document',
+                'user': req.user,
+                'flag': 2,
+                'errMessage': err.message,
+                'profile': profile
+              };
+              res.render('dashboard/document', {
+                data: dataObject
+              });
+            }
+          });
+        } else
+          console.log(err);
+      } else {
         profileGfs.files.findOne({
           'metadata.username': req.user.username
         }, (err, profile) => {
@@ -225,7 +206,7 @@ router.post('/document', (req, res) => {
     res.redirect('/login');
 });
 
-router.get('/document/:filename', (req, res) => {
+router.get('/document/:filename&:action', (req, res) => {
   if (req.isAuthenticated()) {
     docGfs.files.findOne({
       filename: req.params.filename
@@ -233,8 +214,63 @@ router.get('/document/:filename', (req, res) => {
       if (err)
         console.log(err);
       else {
-        const readstream = docGfs.createReadStream(file.filename);
-        readstream.pipe(res);
+        if (req.params.action === 'open') {
+          const readstream = docGfs.createReadStream(file.filename);
+          readstream.pipe(res);
+        } else {
+          const dataObject = {
+            'file': file
+          };
+          res.send({
+            data: dataObject
+          });
+        }
+      }
+    });
+  } else
+    res.redirect('/login');
+});
+
+router.post('/document/:filename', (req, res) => {
+  if (req.isAuthenticated()) {
+    const io = req.app.get('socketio');
+    const p = progress({
+      length: req.headers['content-length'],
+    });
+    const u = docUpload.single('uploaddocument');
+    req.pipe(p);
+    p.headers = req.headers;
+    p.on('progress', (progress) => {
+      const percent = parseInt(progress.percentage);
+      io.emit('uploading', percent);
+    });
+    u(p, res, (err) => {
+      if (err) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          login.isLogin = 4;
+          res.redirect('/dashboard');
+        } else
+          console.log(err);
+      } else {
+        docGfs.files.findOne({
+          filename: req.params.filename
+        }, (err, file) => {
+          if (err)
+            console.log(err);
+          else {
+            docGfs.remove({
+              _id: file._id,
+              root: 'documents'
+            }, (err, gridStore) => {
+              if (err)
+                console.log(err);
+              else {
+                login.isLogin = 2;
+                res.redirect('/dashboard');
+              }
+            });
+          }
+        });
       }
     });
   } else
@@ -250,12 +286,57 @@ router.delete('/document/:filename', (req, res) => {
       if (err)
         console.log(err);
       else {
-        login.isLogin = 2;
+        login.isLogin = 3;
         res.status(200).send("success");
       }
     });
   } else
     res.redirect('/login');
+});
+
+const profileStorage = new GridFsStorage({
+  url: mongoURI,
+  options: {
+    useNewUrlParser: true
+  },
+  file: (req, file) => {
+    return new Promise((resolve, reject) => {
+      crypto.randomBytes(16, (err, buf) => {
+        if (err)
+          return reject(err);
+        else {
+          const filename = buf.toString('hex') + path.extname(file.originalname);
+          const fileInfo = {
+            filename: filename,
+            metadata: {
+              'username': login.user.username,
+              'fullname': req.body.fullname,
+              'email': req.body.email,
+              'nip': req.body.nip,
+              'birthday': req.body.birthday,
+              'phone': req.body.phone
+            },
+            bucketName: 'profiles'
+          };
+          resolve(fileInfo);
+        }
+      });
+    });
+  }
+});
+
+const profileUpload = multer({
+  storage: profileStorage,
+  limits: {
+    fileSize: 4 * 1024 * 1024
+  },
+  fileFilter: function(req, file, cb) {
+    if (file.mimetype !== 'image/jpeg') {
+      req.fileValidationError = 'File type must be JPG/JPEG.';
+      cb(null, false);
+    } else
+      cb(null, true);
+  }
 });
 
 router.get('/profile', (req, res) => {
@@ -296,9 +377,29 @@ router.post('/profile', (req, res) => {
       io.emit('uploading', percent);
     });
     u(p, res, (err) => {
-      if (err)
-        console.log(err);
-      else {
+      if (err) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          profileGfs.files.findOne({
+            'metadata.username': req.user.username
+          }, (error, profile) => {
+            if (error)
+              console.log(error);
+            else {
+              const dataObject = {
+                'title': 'Profile',
+                'user': req.user,
+                'flag': 2,
+                'errMessage': err.message,
+                'profile': profile
+              };
+              res.render('dashboard/profile', {
+                data: dataObject
+              });
+            }
+          });
+        } else
+          console.log(err);
+      } else {
         profileGfs.files.find({
           'metadata.username': req.user.username
         }).toArray((err, profiles) => {
@@ -538,7 +639,6 @@ router.delete('/user/:username', (req, res) => {
                   console.log(err);
                 else {
                   if (p && p.length > 0) {
-                    console.log(p);
                     profileGfs.remove({
                       'filename': p.filename,
                       root: 'profiles'

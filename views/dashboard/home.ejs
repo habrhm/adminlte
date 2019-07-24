@@ -6,16 +6,26 @@
   <!-- Content Header (Page header) -->
   <section class="content-header">
     <% if (data.flag) { %>
+    <% if (data.flag == 4) { %>
+    <div class="alert alert-warning alert-dismissible">
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+      <h4><i class="icon fa fa-warning"></i> Alert!</h4>
+      File is too large.
+    </div>
+    <% } else { %>
     <div class="alert alert-success alert-dismissible">
       <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
       <h4><i class="icon fa fa-check"></i> Alert!</h4>
       <% if (data.flag == 1) { %>
       <% let dt = new Date(); %>
       Login succeed. Last logged in : <%= dt.toDateString() %>
-      <% } else { %>
+      <% } else if (data.flag == 2) { %>
+      The Document have been updated successfully.
+      <% } else if (data.flag == 3) { %>
       The Document have been deleted successfully.
       <% } %>
     </div>
+    <% } %>
     <% } %>
     <h1>
       <%= data.title %>
@@ -47,9 +57,7 @@
                   <th class="all">Saved By</th>
                   <th class="all">Saved Date</th>
                   <th class="all">File</th>
-                  <% if (data.user.role !== 'User') { %>
                   <th class="all">Action</th>
-                  <% } %>
                 </tr>
               </thead>
               <% if (data.files) { %>
@@ -65,17 +73,20 @@
                   <td><%= file.metadata.savedby %></td>
                   <td><%= file.metadata.saveddate %></td>
                   <td>
-                    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#modal-Document" onclick="userAction('<%= file.filename %>','open')">
+                    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#modalOpenDoc" onclick="userAction('<%= file.filename %>','open')">
                       <i class="fa fa-file"></i>
                     </button>
                   </td>
-                  <% if (data.user.role !== 'User') { %>
                   <td>
+                    <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#modalEditDoc" onclick="userAction('<%= file.filename %>','edit')">
+                      <i class="fa fa-edit"></i>
+                    </button>
+                    <% if (data.user.role !== 'User') { %>
                     <button type="button" class="btn btn-danger" onclick="userAction('<%= file.filename %>','delete')">
                       <i class="fa fa-trash"></i>
                     </button>
+                    <% } %>
                   </td>
-                  <% } %>
                 </tr>
                 <% } %>
               </tbody>
@@ -91,9 +102,7 @@
                   <th class="all">Saved By</th>
                   <th class="all">Saved Date</th>
                   <th class="all">File</th>
-                  <% if (data.user.role !== 'User') { %>
                   <th class="all">Action</th>
-                  <% } %>
                 </tr>
               </tfoot>
             </table>
@@ -112,7 +121,7 @@
 <!-- /.content-wrapper -->
 
 <!-- Modal -->
-<div id="modal-Document" class="modal fade" role="dialog">
+<div class="modal fade" id="modalOpenDoc" role="dialog">
   <div class="modal-dialog modal-lg">
     <!-- Modal content-->
     <div class="modal-content">
@@ -120,20 +129,166 @@
         <h4 class="modal-title">File Document</h4>
       </div>
       <div class="modal-body">
-        <embed id="srcDoc" frameborder="0" width="100%" height="450px">
+        <embed id="srcDoc" frameborder="0" width="100%">
         <div class="modal-footer">
           <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
         </div>
       </div>
-
+      <!-- /.modal-content -->
     </div>
   </div>
+</div>
+<!-- /.modal -->
+
+<!-- Modal -->
+<div class="modal fade" id="modalEditDoc" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="modalTitle">Edit Document</h4>
+      </div>
+      <div class="modal-body">
+        <!-- form start -->
+        <form class="form-horizontal" id="modalForm" action="/dashboard/document" method="POST" enctype="multipart/form-data">
+          <div class="box-body">
+            <div class="form-group">
+              <label for="inputCategory" class="col-sm-2 control-label">Category</label>
+              <div class="col-sm-8">
+                <select class="form-control select2" id="inputCategory" name="category" style="width: 100%;" required>
+                  <option value="Undangan">Undangan</option>
+                  <option value="Laporan">Laporan</option>
+                  <option value="Surat Keputusan">Surat Keputusan</option>
+                  <option value="Rekomendasi Teknis">Rekomendasi Teknis</option>
+                  <option value="Permohonan Bantuan">Permohonan Bantuan</option>
+                  <option value="Peraturan">Peraturan</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputDocumentID" class="col-sm-2 control-label">Document ID</label>
+              <div class="col-sm-8">
+                <input type="text" class="form-control" id="inputDocumentID" name="id" placeholder="Please Input the Document ID" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputDocumentTitle" class="col-sm-2 control-label">Document Title</label>
+              <div class="col-sm-8">
+                <input type="text" class="form-control" id="inputDocumentTitle" name="title" placeholder="Please Input the Document Title" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputDocumentSrcObj" class="col-sm-2 control-label">Source or Objective</label>
+              <div class="col-sm-8">
+                <input type="text" class="form-control" id="inputDocumentSrcObj" name="srcorobj" placeholder="Please Input the Source or Objective" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputAssignedTo" class="col-sm-2 control-label">Assigned To</label>
+              <div class="col-sm-8">
+                <input type="text" class="form-control" id="inputAssignedTo" name="assignedto" placeholder="Please Input the Assigned to">
+              </div>
+            </div>
+            <!-- Date -->
+            <div class="form-group">
+              <label for="datepicker" class="col-sm-2 control-label">Date of Assignment</label>
+              <div class="col-sm-8">
+                <div class="input-group date">
+                  <div class="input-group-addon">
+                    <i class="fa fa-calendar"></i>
+                  </div>
+                  <input type="text" class="form-control pull-right" id="datepicker" name="dateofassignment" placeholder="Please Input the Date of Assignment">
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputSavedBy" class="col-sm-2 control-label">Saved By</label>
+              <div class="col-sm-8">
+                <input type="text" class="form-control" id="inputSavedBy" name="savedby" placeholder="Please Input the Saved By" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputDocument" class="col-sm-2 control-label">Upload Document</label>
+              <div class="col-sm-8">
+                <div class="input-group input-file" id="inputDocument" name="uploaddocument">
+                  <span class="input-group-btn">
+                    <button class="btn btn-default btn-choose" type="button">Choose</button>
+                  </span>
+                  <input type="text" class="form-control" placeholder="Please Choose a Document..." required>
+                  <span class="input-group-btn">
+                    <button class="btn btn-warning btn-reset" type="button">Reset</button>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- /.box-body -->
+          <div class="box-footer">
+            <button type="submit" id="modalSubmit" class="btn btn-primary pull-right">Update</button>
+          </div>
+          <!-- /.box-footer -->
+        </form>
+        <div class="progress active" id="progressBox">
+          <div class="progress-bar progress-bar-striped" id="progressbar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:0%">
+            Uploading ...
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
 </div>
 <!-- /.modal -->
 
 <%- include("footer"); -%>
 
 <script>
+  $('form[action="/dashboard/document"]').on('submit', function() {
+    $(this).find('button[type="submit"]').prop('disabled', true);
+  });
+
+  function bs_input_file() {
+    $(".input-file").before(function() {
+      if (!$(this).prev().hasClass('input-ghost')) {
+        let element = $("<input type='file' class='input-ghost' accept='application/pdf, image/jpeg' style='visibility:hidden; height:0'>");
+        element.attr("name", $(this).attr("name"));
+        element.change(function() {
+          let file = this.files[0].name;
+          let ext = file.split('.');
+          ext = ext[ext.length - 1].toLowerCase();
+          let arrayExtensions = ["jpg", "jpeg", "pdf"];
+          if (arrayExtensions.lastIndexOf(ext) == -1 || this.files[0].size > 4 * 1024 * 1024) {
+            swal({
+              title: "Warning",
+              text: "File must be PDF or JPG/JPEG and less than 4 MB!",
+              icon: "warning",
+              dangerMode: true,
+              closeOnClickOutside: false,
+              closeOnEsc: false
+            });
+            element.val(null);
+          }
+          element.next(element).find('input').val((element.val()).split('\\').pop());
+        });
+        $(this).find("button.btn-choose").click(function() {
+          element.click();
+        });
+        $(this).find("button.btn-reset").click(function() {
+          element.val(null);
+          $(this).parents(".input-file").find('input').val('');
+        });
+        $(this).find('input').css("cursor", "pointer");
+        $(this).find('input').mousedown(function() {
+          $(this).parents('.input-file').prev().click();
+          return false;
+        });
+        return element;
+      }
+    });
+  }
+
   function active_menu() {
     let fullpath = window.location.pathname;
     let currentLink = $('a[href="' + fullpath + '"]');
@@ -141,10 +296,27 @@
   }
 
   function userAction(filename, action) {
+    let base_url = window.location.origin;
     if (action === 'open') {
       let ext = filename.split('.').pop();
       $('#srcDoc').attr('height', (ext === 'pdf' ? '450px' : '100%'));
-      $('#srcDoc').attr('src', '/dashboard/document/' + filename);
+      $('#srcDoc').attr('src', '/dashboard/document/' + filename + '&open');
+    } else if (action === 'edit') {
+      $.ajax({
+        type: 'GET',
+        url: base_url + '/dashboard/document/' + filename + '&edit',
+        success: function(data) {
+          $('#inputCategory').val(data.data.file.metadata.category).trigger('change');
+          $('#inputDocumentID').val(data.data.file.metadata.id);
+          $('#inputDocumentTitle').val(data.data.file.metadata.title);
+          $('#inputDocumentSrcObj').val(data.data.file.metadata.srcorobj);
+          $('#inputAssignedTo').val(data.data.file.metadata.assignedto);
+          $('#datepicker').val(data.data.file.metadata.dateofassignment);
+          $('#inputSavedBy').val(data.data.file.metadata.savedby);
+
+          $('#modalForm').attr('action', '/dashboard/document/' + filename);
+        }
+      });
     } else if (action === 'delete') {
       swal({
         title: "Are you sure?",
@@ -158,7 +330,7 @@
         if (willDelete) {
           $.ajax({
             type: 'delete',
-            url: window.location.origin + '/dashboard/document/' + filename,
+            url: base_url + '/dashboard/document/' + filename,
             success: function(data) {
               location.reload();
             }
@@ -169,6 +341,21 @@
   }
 
   $(function() {
+    const socket = io();
+
+    $('#progressBox').hide();
+    socket.on('uploading', function(percentage) {
+      $('#progressBox').show();
+      $('#progressbar').attr('aria-valuenow', percentage).css('width', percentage + '%');
+    });
+    //Initialize Select2 Elements
+    $('.select2').select2();
+    //Date picker
+    $('#datepicker').datepicker({
+      format: 'dd/mm/yyyy',
+      autoclose: true
+    });
+    bs_input_file();
     active_menu();
     $('#docTable').DataTable({
       'responsive': true,

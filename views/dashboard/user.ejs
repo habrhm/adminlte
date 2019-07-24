@@ -91,6 +91,7 @@
 </div>
 <!-- /.content-wrapper -->
 
+<!-- Modal -->
 <div class="modal fade" id="modal-User">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -158,20 +159,8 @@
     currentLink.parent().addClass("active");
   }
 
-  $(function() {
-    active_menu();
-    $('#userTable').DataTable({
-      'paging': true,
-      'lengthChange': false,
-      'searching': true,
-      'ordering': true,
-      'info': true,
-      'autoWidth': false
-    })
-  })
-
   function userAction(value, action) {
-    var base_url = window.location.origin;
+    let base_url = window.location.origin;
     if (action == 'add') {
       $('#id').val("");
       $('#inputUsername').val("");
@@ -225,4 +214,16 @@
       });
     }
   }
+
+  $(function() {
+    active_menu();
+    $('#userTable').DataTable({
+      'paging': true,
+      'lengthChange': false,
+      'searching': true,
+      'ordering': true,
+      'info': true,
+      'autoWidth': false
+    })
+  })
 </script>
