@@ -221,6 +221,9 @@ router.post('/document', (req, res) => {
         });
       }
     });
+    res.json({
+      documentStatus: 'Uploading'
+    });
   } else
     res.redirect('/login');
 });
@@ -333,6 +336,9 @@ router.post('/profile', (req, res) => {
           }
         });
       }
+    });
+    res.json({
+      profileStatus: 'Uploading'
     });
   } else
     res.redirect('/login');
