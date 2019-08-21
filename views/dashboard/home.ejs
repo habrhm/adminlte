@@ -301,11 +301,11 @@
       let ext = filename.split('.').pop();
       $('#srcDoc').attr('height', (ext === 'pdf' ? '450px' : '100%'));
       $('#srcDoc').attr('type', (ext === 'pdf' ? 'application/pdf' : 'image/jpeg'));
-      $('#srcDoc').attr('data', '/dashboard/document/open&' + filename);
+      $('#srcDoc').attr('data', '/dashboard/document/open/' + filename);
     } else if (action === 'edit') {
       $.ajax({
         type: 'GET',
-        url: base_url + '/dashboard/document/edit&' + filename,
+        url: base_url + '/dashboard/document/edit/' + filename,
         success: function(data) {
           $('#inputCategory').val(data.data.file.metadata.category).trigger('change');
           $('#inputDocumentID').val(data.data.file.metadata.id);

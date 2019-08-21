@@ -206,7 +206,7 @@ router.post('/document', (req, res) => {
     res.redirect('/login');
 });
 
-router.get('/document/:action&:filename', (req, res) => {
+router.get('/document/open/:filename', (req, res) => {
   if (req.isAuthenticated()) {
     docGfs.files.findOne({
       filename: req.params.filename
@@ -214,17 +214,28 @@ router.get('/document/:action&:filename', (req, res) => {
       if (err)
         console.log(err);
       else {
-        if (req.params.action === 'open') {
-          const readstream = docGfs.createReadStream(file.filename);
-          readstream.pipe(res);
-        } else {
-          const dataObject = {
-            'file': file
-          };
-          res.send({
-            data: dataObject
-          });
-        }
+        const readstream = docGfs.createReadStream(file.filename);
+        readstream.pipe(res);
+      }
+    });
+  } else
+    res.redirect('/login');
+});
+
+router.get('/document/edit/:filename', (req, res) => {
+  if (req.isAuthenticated()) {
+    docGfs.files.findOne({
+      filename: req.params.filename
+    }, (err, file) => {
+      if (err)
+        console.log(err);
+      else {
+        const dataObject = {
+          'file': file
+        };
+        res.send({
+          data: dataObject
+        });
       }
     });
   } else
