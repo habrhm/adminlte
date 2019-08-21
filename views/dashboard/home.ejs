@@ -129,7 +129,12 @@
         <h4 class="modal-title">File Document</h4>
       </div>
       <div class="modal-body">
-        <object id="srcDoc" width="100%"></object>
+        <object id="srcDoc" width="100%">
+          <p>
+            Your web browser doesn't have a PDF plugin.
+            Instead you can <a id="srcDoc2">click here to download the PDF file.</a>
+          </p>
+        </object>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
         </div>
@@ -302,6 +307,7 @@
       $('#srcDoc').attr('height', (ext === 'pdf' ? '450px' : '100%'));
       $('#srcDoc').attr('type', (ext === 'pdf' ? 'application/pdf' : 'image/jpeg'));
       $('#srcDoc').attr('data', '/dashboard/document/open/' + filename);
+      $('#srcDoc2').attr('href', '/dashboard/document/open/' + filename);
     } else if (action === 'edit') {
       $.ajax({
         type: 'GET',
