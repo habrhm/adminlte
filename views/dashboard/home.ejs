@@ -129,7 +129,7 @@
         <h4 class="modal-title">File Document</h4>
       </div>
       <div class="modal-body">
-        <embed id="srcDoc" frameborder="0" width="100%">
+        <object id="srcDoc" width="100%"></object>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
         </div>
@@ -300,7 +300,8 @@
     if (action === 'open') {
       let ext = filename.split('.').pop();
       $('#srcDoc').attr('height', (ext === 'pdf' ? '450px' : '100%'));
-      $('#srcDoc').attr('src', '/dashboard/document/open&' + filename);
+      $('#srcDoc').attr('type', (ext === 'pdf' ? 'application/pdf' : 'image/jpeg'));
+      $('#srcDoc').attr('data', '/dashboard/document/open&' + filename);
     } else if (action === 'edit') {
       $.ajax({
         type: 'GET',
