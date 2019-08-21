@@ -206,7 +206,7 @@ router.post('/document', (req, res) => {
     res.redirect('/login');
 });
 
-router.get('/document/:filename&:action', (req, res) => {
+router.get('/document/:action&:filename', (req, res) => {
   if (req.isAuthenticated()) {
     docGfs.files.findOne({
       filename: req.params.filename

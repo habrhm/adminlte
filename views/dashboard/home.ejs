@@ -300,11 +300,11 @@
     if (action === 'open') {
       let ext = filename.split('.').pop();
       $('#srcDoc').attr('height', (ext === 'pdf' ? '450px' : '100%'));
-      $('#srcDoc').attr('src', '/dashboard/document/' + filename + '&open');
+      $('#srcDoc').attr('src', '/dashboard/document/open&' + filename);
     } else if (action === 'edit') {
       $.ajax({
         type: 'GET',
-        url: base_url + '/dashboard/document/' + filename + '&edit',
+        url: base_url + '/dashboard/document/edit&' + filename,
         success: function(data) {
           $('#inputCategory').val(data.data.file.metadata.category).trigger('change');
           $('#inputDocumentID').val(data.data.file.metadata.id);
@@ -313,7 +313,6 @@
           $('#inputAssignedTo').val(data.data.file.metadata.assignedto);
           $('#datepicker').val(data.data.file.metadata.dateofassignment);
           $('#inputSavedBy').val(data.data.file.metadata.savedby);
-
           $('#modalForm').attr('action', '/dashboard/document/' + filename);
         }
       });
